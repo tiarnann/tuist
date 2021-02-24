@@ -40,6 +40,7 @@ final class TestService {
     private let xcodebuildController: XcodeBuildControlling
     private let buildGraphInspector: BuildGraphInspecting
     private let simulatorController: SimulatorControlling
+    private let derivedDataLocator: DerivedDataLocating
 
     private let temporaryDirectory: TemporaryDirectory
     private let testsCacheTemporaryDirectory: TemporaryDirectory
@@ -60,7 +61,8 @@ final class TestService {
         testServiceGeneratorFactory: TestServiceGeneratorFactorying,
         xcodebuildController: XcodeBuildControlling = XcodeBuildController(),
         buildGraphInspector: BuildGraphInspecting = BuildGraphInspector(),
-        simulatorController: SimulatorControlling = SimulatorController()
+        simulatorController: SimulatorControlling = SimulatorController(),
+        derivedDataLocator: DerivedDataLocating = DerivedDataLocator()
     ) {
         self.temporaryDirectory = temporaryDirectory
         self.testsCacheTemporaryDirectory = testsCacheTemporaryDirectory
@@ -68,6 +70,7 @@ final class TestService {
         self.xcodebuildController = xcodebuildController
         self.buildGraphInspector = buildGraphInspector
         self.simulatorController = simulatorController
+        self.derivedDataLocator = derivedDataLocator
     }
 
     func run(
@@ -91,6 +94,12 @@ final class TestService {
         )
         let graphTraverser = ValueGraphTraverser(graph: graph)
         let version = osVersion?.version()
+        
+        let derivedDataPath = try derivedDataLocator.locate(
+            for: graph.workspace.path.appending(
+                component: graph.workspace.xcWorkspacePath.basename
+            )
+        )
 
         let testableSchemes = buildGraphInspector.testableSchemes(graphTraverser: graphTraverser) + buildGraphInspector.projectSchemes(graphTraverser: graphTraverser)
         logger.log(
@@ -122,7 +131,8 @@ final class TestService {
                     clean: clean,
                     configuration: configuration,
                     version: version,
-                    deviceName: deviceName
+                    deviceName: deviceName,
+                    derivedDataPath: derivedDataPath
                 )
             }
         } else {
@@ -143,7 +153,8 @@ final class TestService {
                     clean: clean,
                     configuration: configuration,
                     version: version,
-                    deviceName: deviceName
+                    deviceName: deviceName,
+                    derivedDataPath: derivedDataPath
                 )
             }
 
@@ -177,7 +188,8 @@ final class TestService {
         clean: Bool,
         configuration: String?,
         version: Version?,
-        deviceName: String?
+        deviceName: String?,
+        derivedDataPath: AbsolutePath
     ) throws {
         logger.log(level: .notice, "Testing scheme \(scheme.name)", metadata: .section)
         guard let buildableTarget = buildGraphInspector.testableTarget(scheme: scheme, graphTraverser: graphTraverser) else {
@@ -197,7 +209,7 @@ final class TestService {
             scheme: scheme.name,
             clean: clean,
             destination: destination,
-            derivedDataPath: nil,
+            derivedDataPath: derivedDataPath,
             arguments: buildGraphInspector.buildArguments(
                 project: buildableTarget.project,
                 target: buildableTarget.target,
