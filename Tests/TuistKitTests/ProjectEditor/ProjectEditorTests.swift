@@ -92,7 +92,7 @@ final class ProjectEditorTests: TuistUnitTestCase {
         }
 
         // When
-        try _ = subject.edit(at: directory, in: directory)
+        try _ = subject.edit(at: directory, onlyCurrentDirectory: false, in: directory)
 
         // Then
         XCTAssertEqual(projectEditorMapper.mapArgs.count, 1)
@@ -126,7 +126,7 @@ final class ProjectEditorTests: TuistUnitTestCase {
         // Then
         XCTAssertThrowsSpecific(
             // When
-            try subject.edit(at: directory, in: directory), ProjectEditorError.noEditableFiles(directory)
+            try subject.edit(at: directory, onlyCurrentDirectory: false, in: directory), ProjectEditorError.noEditableFiles(directory)
         )
     }
 
@@ -148,7 +148,7 @@ final class ProjectEditorTests: TuistUnitTestCase {
         }
 
         // When
-        try _ = subject.edit(at: directory, in: directory)
+        try _ = subject.edit(at: directory, onlyCurrentDirectory: false, in: directory)
 
         // Then
         XCTAssertEqual(projectEditorMapper.mapArgs.count, 1)
@@ -182,7 +182,7 @@ final class ProjectEditorTests: TuistUnitTestCase {
         }
 
         // When
-        try _ = subject.edit(at: directory, in: directory)
+        try _ = subject.edit(at: directory, onlyCurrentDirectory: false, in: directory)
 
         // Then
         XCTAssertEqual(projectEditorMapper.mapArgs.count, 1)

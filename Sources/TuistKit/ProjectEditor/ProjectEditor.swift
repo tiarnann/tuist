@@ -29,9 +29,12 @@ protocol ProjectEditing: AnyObject {
     /// Generates an Xcode project to edit the Project defined in the given directory.
     /// - Parameters:
     ///   - editingPath: Directory whose project will be edited.
+    ///   - onlyCurrentDirectory: True if only the manifest in the current directory should be included.
     ///   - destinationDirectory: Directory in which the Xcode project will be generated.
     /// - Returns: The path to the generated Xcode project.
-    func edit(at editingPath: AbsolutePath, in destinationDirectory: AbsolutePath) throws -> AbsolutePath
+    func edit(at editingPath: AbsolutePath,
+              onlyCurrentDirectory: Bool,
+              in destinationDirectory: AbsolutePath) throws -> AbsolutePath
 }
 
 final class ProjectEditor: ProjectEditing {
@@ -74,9 +77,12 @@ final class ProjectEditor: ProjectEditing {
         self.templatesDirectoryLocator = templatesDirectoryLocator
     }
 
-    func edit(at editingPath: AbsolutePath, in destinationDirectory: AbsolutePath) throws -> AbsolutePath {
+    func edit(at editingPath: AbsolutePath,
+              onlyCurrentDirectory: Bool,
+              in destinationDirectory: AbsolutePath) throws -> AbsolutePath {
         let projectDescriptionPath = try resourceLocator.projectDescription()
         let projectManifests = manifestFilesLocator.locateProjectManifests(at: editingPath)
+            .filter({ !onlyCurrentDirectory || $0.1.parentDirectory == FileHandler.shared.currentPath })
         let pluginManifests = manifestFilesLocator.locatePluginManifests(at: editingPath)
         let configPath = manifestFilesLocator.locateConfig(at: editingPath)
         let dependenciesPath = manifestFilesLocator.locateDependencies(at: editingPath)
