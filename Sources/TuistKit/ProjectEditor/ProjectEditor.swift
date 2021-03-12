@@ -79,10 +79,11 @@ final class ProjectEditor: ProjectEditing {
 
     func edit(at editingPath: AbsolutePath,
               onlyCurrentDirectory: Bool,
-              in destinationDirectory: AbsolutePath) throws -> AbsolutePath {
+              in destinationDirectory: AbsolutePath) throws -> AbsolutePath
+    {
         let projectDescriptionPath = try resourceLocator.projectDescription()
         let projectManifests = manifestFilesLocator.locateProjectManifests(at: editingPath)
-            .filter({ !onlyCurrentDirectory || $0.1.parentDirectory == FileHandler.shared.currentPath })
+            .filter { !onlyCurrentDirectory || $0.1.parentDirectory == FileHandler.shared.currentPath }
         let pluginManifests = manifestFilesLocator.locatePluginManifests(at: editingPath)
         let configPath = manifestFilesLocator.locateConfig(at: editingPath)
         let dependenciesPath = manifestFilesLocator.locateDependencies(at: editingPath)
